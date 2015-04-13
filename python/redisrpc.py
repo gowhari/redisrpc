@@ -34,6 +34,7 @@ __all__ = [
 
 
 logger = logging.getLogger(__name__)
+log_errors_on_server = True
 
 
 if sys.version_info < (3,):
@@ -147,6 +148,7 @@ class Server(object):
         self.redis_server = redis_server
         self.message_queue = message_queue
         self.local_object = local_object
+        self.log_errors_on_server = log_errors_on_server
  
     def run(self):
         # Flush the message queue.
@@ -168,7 +170,8 @@ class Server(object):
                 rpc_response = dict(return_value=return_value)
             except:
                 (type, value, tb) = sys.exc_info()
-                logger.error(traceback.format_exc())
+                if self.log_errors_on_server:
+                    logger.error(traceback.format_exc())
                 rpc_response = dict(exception=repr(value))
             message = transport.dumps(rpc_response)
             logger.debug('RPC Response: %s' % message)
