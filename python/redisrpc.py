@@ -1,15 +1,15 @@
 # Copyright (C) 2012.  Nathan Farrington <nfarring@gmail.com>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -39,6 +39,7 @@ log_errors_on_server = True
 
 if sys.version_info < (3,):
     range = xrange
+
 
 def random_string(size=8, chars=string.ascii_uppercase + string.digits):
     """Ref: http://stackoverflow.com/questions/2257441"""
@@ -75,13 +76,16 @@ def decode_message(message):
 class JSONTransport(object):
     """Cross platform transport."""
     _singleton = None
+
     @classmethod
     def create(cls):
         if cls._singleton is None:
             cls._singleton = JSONTransport()
         return cls._singleton
+
     def dumps(self, obj):
         return json.dumps(obj)
+
     def loads(self, obj):
         return json.loads(obj.decode())
 
@@ -89,17 +93,21 @@ class JSONTransport(object):
 class PickleTransport(object):
     """Only works with Python clients and servers."""
     _singleton = None
+
     @classmethod
     def create(cls):
         if cls._singleton is None:
             cls._singleton = PickleTransport()
         return cls._singleton
+
     def dumps(self, obj):
         # Version 2 works for Python 2.3 and later
         return pickle.dumps(obj, protocol=2)
+
     def loads(self, obj):
         return pickle.loads(obj)
- 
+
+
 class Client(object):
     """Calls remote functions using Redis as a message queue."""
 
@@ -149,7 +157,7 @@ class Server(object):
         self.message_queue = message_queue
         self.local_object = local_object
         self.log_errors_on_server = log_errors_on_server
- 
+
     def run(self):
         # Flush the message queue.
         self.redis_server.delete(self.message_queue)
