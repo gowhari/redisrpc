@@ -32,6 +32,10 @@ __all__ = [
     'TimeoutException'
 ]
 
+
+logger = logging.getLogger(__name__)
+
+
 if sys.version_info < (3,):
     range = xrange
 
@@ -114,7 +118,7 @@ class Client(object):
         response_queue = self.message_queue + ':rpc:' + random_string()
         rpc_request = dict(function_call=function_call, response_queue=response_queue)
         message = self.transport.dumps(rpc_request)
-        logging.debug('RPC Request: %s' % message)
+        logger.debug('RPC Request: %s' % message)
         self.redis_server.rpush(self.message_queue, message)
         result = self.redis_server.blpop(response_queue, self.timeout)
         if result is None:
@@ -122,7 +126,7 @@ class Client(object):
         message_queue, message = result
         message_queue = message_queue.decode()
         assert message_queue == response_queue
-        logging.debug('RPC Response: %s' % message)
+        logger.debug('RPC Response: %s' % message)
         rpc_response = self.transport.loads(message)
         exception = rpc_response.get('exception')
         if exception is not None:
@@ -151,7 +155,7 @@ class Server(object):
             message_queue, message = self.redis_server.blpop(self.message_queue)
             message_queue = message_queue.decode()
             assert message_queue == self.message_queue
-            logging.debug('RPC Request: %s' % message)
+            logger.debug('RPC Request: %s' % message)
             transport, rpc_request = decode_message(message)
             response_queue = rpc_request['response_queue']
             function_call = rpc_request['function_call']
@@ -164,10 +168,10 @@ class Server(object):
                 rpc_response = dict(return_value=return_value)
             except:
                 (type, value, tb) = sys.exc_info()
-                logging.error(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 rpc_response = dict(exception=repr(value))
             message = transport.dumps(rpc_response)
-            logging.debug('RPC Response: %s' % message)
+            logger.debug('RPC Response: %s' % message)
             self.redis_server.rpush(response_queue, message)
 
 
