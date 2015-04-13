@@ -16,6 +16,7 @@
 
 import json
 import logging
+import traceback
 import pickle
 import random
 import string
@@ -162,7 +163,8 @@ class Server(object):
                 return_value = func(*f_args, **f_kw)
                 rpc_response = dict(return_value=return_value)
             except:
-                (type, value, traceback) = sys.exc_info()
+                (type, value, tb) = sys.exc_info()
+                logging.error(traceback.format_exc())
                 rpc_response = dict(exception=repr(value))
             message = transport.dumps(rpc_response)
             logging.debug('RPC Response: %s' % message)
